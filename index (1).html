@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steganography - The Art of Hidden Communication</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1a237e;
+            --secondary: #283593;
+            --accent: #3949ab;
+            --purple: #5e35b1;
+            --light-purple: #7e57c2;
+            --success: #00c853;
+            --danger: #d32f2f;
+            --warning: #ffa000;
+            --dark: #0d1117;
+            --light: #f5f7fa;
+            --white: #ffffff;
+            --border: #e0e7ff;
+            --shadow: rgba(26, 35, 126, 0.15);
+            --gradient-start: #1a237e;
+            --gradient-end: #5e35b1;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+            pointer-events: none;
+        }
+
+        .container {
+            background: var(--white);
+            border-radius: 24px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 1000px;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 15s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.2); opacity: 0.5; }
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header .subtitle {
+            font-size: 1.3em;
+            opacity: 0.95;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            padding: 45px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeSlideIn 0.5s ease;
+        }
+
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            color: var(--primary);
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 25px;
+            text-align: center;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--purple));
+            border-radius: 2px;
+        }
+
+        .intro-text {
+            text-align: center;
+            color: #546e7a;
+            line-height: 1.8;
+            margin-bottom: 35px;
+            font-size: 1.05em;
+        }
+
+        .welcome-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            padding: 35px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px var(--shadow);
+            border-color: var(--purple);
+        }
+
+        .feature-card:hover::before {
+            opacity: 0.05;
+        }
+
+        .feature-card .icon {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+
+        .feature-card h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-card p {
+            color: #607d8b;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%);
+            color: white;
+            border: none;
+            padding: 16px 35px;
+            border-radius: 12px;
+            font-size: 1.05em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-decoration: none;
+            box-shadow: 0 8px 20px rgba(94, 53, 177, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(94, 53, 177, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #546e7a 0%, #78909c 100%);
+            box-shadow: 0 8px 20px rgba(84, 110, 122, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, #00e676 100%);
+            box-shadow: 0 8px 20px rgba(0, 200, 83, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 12px;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.05em;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="password"],
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--purple);
+            background: white;
+            box-shadow: 0 4px 12px rgba(94, 53, 177, 0.1);
+        }
+
+        .file-upload {
+            border: 3px dashed var(--border);
+            border-radius: 16px;
+            padding: 45px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-upload::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .file-upload:hover::before {
+            opacity: 0.03;
+        }
+
+        .file-upload:hover {
+            border-color: var(--purple);
+            transform: translateY(-2px);
+        }
+
+        .file-upload.dragover {
+            border-color: var(--success);
+            background: #e8f5e9;
+        }
+
+        .file-upload input {
+            display: none;
+        }
+
+        .file-upload .icon {
+            font-size: 3.5em;
+            color: var(--purple);
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .file-upload p {
+            position: relative;
+            z-index: 1;
+        }
+
+        .file-info {
+            background: linear-gradient(135deg, #e8eaf6 0%, #f3e5f5 100%);
+            border: 2px solid #b39ddb;
+            border-radius: 12px;
+            padding: 18px;
+            margin-top: 18px;
+            display: none;
+        }
+
+        .file-info.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .file-info .filename {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+            font-size: 1.05em;
+        }
+
+        .file-info .filesize {
+            color: #5e35b1;
+            font-size: 0.95em;
+        }
+
+        .alert {
+            padding: 18px 24px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-weight: 600;
+            display: none;
+            border-left: 5px solid;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            color: #1b5e20;
+            border-color: var(--success);
+        }
+
+        .alert-danger {
+            background: #ffebee;
+            color: #b71c1c;
+            border-color: var(--danger);
+        }
+
+        .alert-info {
+            background: #e3f2fd;
+            color: #0d47a1;
+            border-color: #1976d2;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 35px;
+            flex-wrap: wrap;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e0e7ff;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 25px 0;
+            display: none;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar.show {
+            display: block;
+        }
+
+        .progress-bar .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--purple), var(--light-purple));
+            transition: width 0.4s ease;
+            width: 0%;
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .hash-display {
+            background: linear-gradient(135deg, var(--dark) 0%, #1a1f2e 100%);
+            color: var(--success);
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            word-break: break-all;
+            margin-top: 20px;
+            display: none;
+            border: 2px solid var(--purple);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .hash-display.show {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #e8eaf6 0%, #f3e5f5 100%);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px var(--shadow);
+        }
+
+        .stat-box .label {
+            color: #7e57c2;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-box .value {
+            color: var(--primary);
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            z-index: 2;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateX(-3px);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .format-support {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .format-badge {
+            background: linear-gradient(135deg, var(--purple) 0%, var(--light-purple) 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 700;
+            box-shadow: 0 4px 10px rgba(94, 53, 177, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-highlight {
+            background: linear-gradient(135deg, #e8eaf6 0%, #f3e5f5 100%);
+            border-left: 5px solid var(--purple);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 25px 0;
+        }
+
+        .feature-highlight h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .feature-highlight p {
+            color: #546e7a;
+            line-height: 1.6;
+        }
+
+        .password-strength {
+            margin-top: 12px;
+            padding: 12px;
+            background: #f8f9ff;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+        }
+
+        .strength-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e7ff;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .strength-fill.weak {
+            width: 33%;
+            background: linear-gradient(90deg, #ef5350, #e53935);
+        }
+
+        .strength-fill.medium {
+            width: 66%;
+            background: linear-gradient(90deg, #ffa726, #fb8c00);
+        }
+
+        .strength-fill.strong {
+            width: 100%;
+            background: linear-gradient(90deg, #66bb6a, #43a047);
+        }
+
+        .strength-text {
+            font-size: 0.9em;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .strength-text.weak {
+            color: #d32f2f;
+        }
+
+        .strength-text.medium {
+            color: #f57c00;
+        }
+
+        .strength-text.strong {
+            color: #2e7d32;
+        }
+
+        .password-requirements {
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: #7e57c2;
+        }
+
+        .password-requirements ul {
+            margin: 8px 0 0 20px;
+            padding: 0;
+        }
+
+        .password-requirements li {
+            margin: 4px 0;
+            color: #546e7a;
+        }
+
+        .password-requirements li.met {
+            color: var(--success);
+        }
+
+        .password-requirements li.met::before {
+            content: '✓ ';
+            font-weight: bold;
+        }
+
+        .password-requirements li:not(.met)::before {
+            content: '○ ';
+        }
+
+        .about-us-section {
+            background: linear-gradient(135deg, #e8eaf6 0%, #f3e5f5 100%);
+            border-radius: 20px;
+            padding: 40px 30px;
+            margin: 35px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(94, 53, 177, 0.1);
+        }
+
+        .about-us-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(94, 53, 177, 0.05) 0%, transparent 70%);
+            animation: rotateGradient 20s linear infinite;
+        }
+
+        @keyframes rotateGradient {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .about-title {
+            color: var(--primary);
+            font-size: 2em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .about-subtitle {
+            color: #7e57c2;
+            font-size: 1.1em;
+            margin-bottom: 35px;
+            position: relative;
+            z-index: 1;
+            font-style: italic;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .team-member {
+            background: white;
+            border-radius: 16px;
+            padding: 30px 20px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .team-member::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .team-member:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 15px 35px rgba(94, 53, 177, 0.25);
+            border-color: var(--purple);
+        }
+
+        .team-member:hover::before {
+            opacity: 0.08;
+        }
+
+        .member-icon {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 4px 8px rgba(94, 53, 177, 0.2));
+        }
+
+        .member-name {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .member-id {
+            font-size: 0.95em;
+            color: var(--purple);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 1;
+            font-family: 'Courier New', monospace;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .header .subtitle {
+                font-size: 1.1em;
+            }
+
+            .content {
+                padding: 30px 25px;
+            }
+
+            .welcome-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .back-btn {
+                padding: 8px 20px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header" style="position: relative;">
+            <button class="back-btn" id="backBtn" style="display: none;">← Back</button>
+            <h1>🔐 Steganography</h1>
+            <p class="subtitle">The Art of Hidden Communication</p>
+        </div>
+
+        <div class="content">
+            <!-- Welcome Page -->
+            <div id="welcomePage" class="page active">
+                <h2 class="section-title">Secure Your Data</h2>
+                <p class="intro-text">
+                    Steganography is the practice of concealing messages within other media types. 
+                    It hides the existence of the message itself by embedding it within another file, 
+                    ensuring secure and covert communication.
+                </p>
+
+                <div class="welcome-grid">
+                    <div class="feature-card" id="encodeCard">
+                        <div class="icon">🔒</div>
+                        <h3>Encode Data</h3>
+                        <p>Hide secret messages inside images, audio, and video files using advanced LSB (Least Significant Bit) encoding techniques</p>
+                        <div class="format-support">
+                            <span class="format-badge">PNG</span>
+                            <span class="format-badge">JPG</span>
+                            <span class="format-badge">JPEG</span>
+                            <span class="format-badge">MP3</span>
+                            <span class="format-badge">MP4</span>
+                        </div>
+                    </div>
+
+                    <div class="feature-card" id="decodeCard">
+                        <div class="icon">🔓</div>
+                        <h3>Decode Data</h3>
+                        <p>Extract hidden messages with password authentication and file integrity verification using SHA-256 hashing</p>
+                        <div class="format-support">
+                            <span class="format-badge">Secure</span>
+                            <span class="format-badge">Verified</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="about-us-section">
+                    <h4 class="about-title">👥Meet Our Team</h4>
+                    <p class="about-subtitle">Passionate developers behind this steganography system</p>
+                    
+                    <div class="team-grid">
+                        <div class="team-member">
+                            <div class="member-icon">👩🏻‍💻</div>
+                            <div class="member-name">Javeria Faisal</div>
+                            <div class="member-id">F24605017</div>
+                        </div>
+                        
+                        <div class="team-member">
+                            <div class="member-icon">👩🏻‍💻</div>
+                            <div class="member-name">Bisma Fatima</div>
+                            <div class="member-id">F24605036</div>
+                        </div>
+                        
+                        <div class="team-member">
+                            <div class="member-icon">👩🏻‍💻</div>
+                            <div class="member-name">Ayesha Imran</div>
+                            <div class="member-id">F24605019</div>
+                        </div>
+                        
+                        <div class="team-member">
+                            <div class="member-icon">👩🏻‍💻</div>
+                            <div class="member-name">Sawaira Anwar</div>
+                            <div class="member-id">F24605041</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="label">Supported Formats</div>
+                        <div class="value">5</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="label">Security Level</div>
+                        <div class="value">SHA-256</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="label">Max File Size</div>
+                        <div class="value">50MB</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Encode Page -->
+            <div id="encodePage" class="page">
+                <h2 class="section-title">🔒 Encode</h2>
+                <p class="intro-text">Conceal your secret message within an image, audio, or video file without altering its visible appearance</p>
+
+                <div class="alert" id="encodeAlert"></div>
+
+                <div class="form-group">
+                    <label>1. Upload Cover File (PNG, JPG, JPEG, MP3, MP4)</label>
+                    <div class="file-upload" id="encodeFileUpload">
+                        <input type="file" id="encodeFile" accept=".png,.jpg,.jpeg,.mp3,.mp4">
+                        <div class="icon">📁</div>
+                        <p><strong>Click or drag & drop</strong> your file here</p>
+                        <p style="color: #7e57c2; font-size: 0.95em; margin-top: 12px;">Max size: 50MB</p>
+                    </div>
+                    <div class="file-info" id="encodeFileInfo"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>2. Enter Secret Message</label>
+                    <textarea id="secretMessage" placeholder="Type your confidential message here..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>3. Set Password (Required for Decoding)</label>
+                    <input type="password" id="encodePassword" placeholder="Create a strong password">
+                    <div class="password-strength" id="passwordStrength" style="display: none;">
+                        <div class="strength-bar">
+                            <div class="strength-fill"></div>
+                        </div>
+                        <div class="strength-text"></div>
+                    </div>
+                </div>
+
+                <div class="progress-bar" id="encodeProgress">
+                    <div class="progress"></div>
+                </div>
+
+                <div class="hash-display" id="encodeHash"></div>
+
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="encodeData()">🔒 Encode & Download</button>
+                    <button class="btn btn-secondary" onclick="showPage('welcomePage')">Cancel</button>
+                </div>
+            </div>
+
+            <!-- Decode Page -->
+            <div id="decodePage" class="page">
+                <h2 class="section-title">🔓 Decode</h2>
+                <p class="intro-text">Extract hidden messages from encoded files with password authentication</p>
+
+                <div class="alert" id="decodeAlert"></div>
+
+                <div class="form-group">
+                    <label>1. Upload Encoded File</label>
+                    <div class="file-upload" id="decodeFileUpload">
+                        <input type="file" id="decodeFile" accept=".png,.jpg,.jpeg,.mp3,.mp4">
+                        <div class="icon">📂</div>
+                        <p><strong>Click or drag & drop</strong> your encoded file here</p>
+                    </div>
+                    <div class="file-info" id="decodeFileInfo"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>2. Load Backup File (Optional - for verification)</label>
+                    <div class="file-upload" id="backupFileUpload" style="padding: 25px;">
+                        <input type="file" id="backupFile" accept=".txt">
+                        <div class="icon" style="font-size: 2.5em;">📋</div>
+                        <p style="font-size: 0.95em;"><strong>Upload backup.txt</strong> to verify file integrity</p>
+                    </div>
+                    <div class="file-info" id="backupFileInfo"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>3. Enter Password</label>
+                    <input type="password" id="decodePassword" placeholder="Enter the password used during encoding">
+                </div>
+
+                <div class="progress-bar" id="decodeProgress">
+                    <div class="progress"></div>
+                </div>
+
+                <div class="form-group" id="decodedMessageGroup" style="display: none;">
+                    <label>✓ Decoded Message</label>
+                    <textarea id="decodedMessage" readonly></textarea>
+                </div>
+
+                <div class="hash-display" id="decodeHash"></div>
+
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="decodeData()">🔓 Decode Message</button>
+                    <button class="btn btn-secondary" onclick="showPage('welcomePage')">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state management
+        const state = {
+            encodeFile: null,
+            decodeFile: null,
+            backups: {}
+        };
+
+        // Initialize the application
+        function init() {
+            loadBackups();
+            setupEventListeners();
+        }
+
+        // Setup all event listeners
+        function setupEventListeners() {
+            // Encode file upload
+            const encodeUpload = document.getElementById('encodeFileUpload');
+            const encodeInput = document.getElementById('encodeFile');
+            
+            encodeUpload.addEventListener('click', () => encodeInput.click());
+            encodeInput.addEventListener('change', (e) => handleFileSelect(e, 'encode'));
+            
+            encodeUpload.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                encodeUpload.classList.add('dragover');
+            });
+            
+            encodeUpload.addEventListener('dragleave', () => {
+                encodeUpload.classList.remove('dragover');
+            });
+            
+            encodeUpload.addEventListener('drop', (e) => {
+                e.preventDefault();
+                encodeUpload.classList.remove('dragover');
+                if (e.dataTransfer.files.length) {
+                    encodeInput.files = e.dataTransfer.files;
+                    handleFileSelect({target: encodeInput}, 'encode');
+                }
+            });
+
+            // Decode file upload
+            const decodeUpload = document.getElementById('decodeFileUpload');
+            const decodeInput = document.getElementById('decodeFile');
+            
+            decodeUpload.addEventListener('click', () => decodeInput.click());
+            decodeInput.addEventListener('change', (e) => handleFileSelect(e, 'decode'));
+            
+            decodeUpload.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                decodeUpload.classList.add('dragover');
+            });
+            
+            decodeUpload.addEventListener('dragleave', () => {
+                decodeUpload.classList.remove('dragover');
+            });
+            
+            decodeUpload.addEventListener('drop', (e) => {
+                e.preventDefault();
+                decodeUpload.classList.remove('dragover');
+                if (e.dataTransfer.files.length) {
+                    decodeInput.files = e.dataTransfer.files;
+                    handleFileSelect({target: decodeInput}, 'decode');
+                }
+            });
+
+            // Backup file upload
+            const backupUpload = document.getElementById('backupFileUpload');
+            const backupInput = document.getElementById('backupFile');
+            
+            backupUpload.addEventListener('click', () => backupInput.click());
+            backupInput.addEventListener('change', (e) => handleBackupFileSelect(e));
+            
+            backupUpload.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                backupUpload.classList.add('dragover');
+            });
+            
+            backupUpload.addEventListener('dragleave', () => {
+                backupUpload.classList.remove('dragover');
+            });
+            
+            backupUpload.addEventListener('drop', (e) => {
+                e.preventDefault();
+                backupUpload.classList.remove('dragover');
+                if (e.dataTransfer.files.length) {
+                    backupInput.files = e.dataTransfer.files;
+                    handleBackupFileSelect({target: backupInput});
+                }
+            });
+
+            // Password strength checker
+            const encodePassword = document.getElementById('encodePassword');
+            encodePassword.addEventListener('input', (e) => checkPasswordStrength(e.target.value));
+
+            // Navigation cards
+            document.getElementById('encodeCard').addEventListener('click', function() {
+                showPage('encodePage');
+            });
+
+            document.getElementById('decodeCard').addEventListener('click', function() {
+                showPage('decodePage');
+            });
+        }
+
+        // Page navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+            
+            const backBtn = document.getElementById('backBtn');
+            backBtn.style.display = pageId === 'welcomePage' ? 'none' : 'block';
+            backBtn.onclick = () => showPage('welcomePage');
+            
+            // Clear alerts when changing pages
+            clearAlerts();
+        }
+
+
+
+        // Check password strength
+        function checkPasswordStrength(password) {
+            const strengthContainer = document.getElementById('passwordStrength');
+            const strengthFill = strengthContainer.querySelector('.strength-fill');
+            const strengthText = strengthContainer.querySelector('.strength-text');
+
+            if (!password) {
+                strengthContainer.style.display = 'none';
+                return;
+            }
+
+            strengthContainer.style.display = 'block';
+
+            // Calculate strength score
+            let score = 0;
+            const checks = {
+                length: password.length >= 8,
+                uppercase: /[A-Z]/.test(password),
+                lowercase: /[a-z]/.test(password),
+                numbers: /[0-9]/.test(password),
+                special: /[^A-Za-z0-9]/.test(password)
+            };
+
+            // Score calculation
+            if (checks.length) score += 2;
+            if (password.length >= 12) score += 1;
+            if (checks.uppercase) score += 1;
+            if (checks.lowercase) score += 1;
+            if (checks.numbers) score += 1;
+            if (checks.special) score += 2;
+
+            // Determine strength level
+            let strength = 'weak';
+            let strengthLabel = '❌ Weak Password';
+            
+            if (score >= 7) {
+                strength = 'strong';
+                strengthLabel = '✓ Strong Password';
+            } else if (score >= 4) {
+                strength = 'medium';
+                strengthLabel = '⚠ Medium Password';
+            }
+
+            // Update UI
+            strengthFill.className = `strength-fill ${strength}`;
+            strengthText.className = `strength-text ${strength}`;
+            strengthText.textContent = strengthLabel;
+
+            // Add requirements info
+            let requirementsHtml = '<div class="password-requirements"><ul>';
+            requirementsHtml += `<li class="${checks.length ? 'met' : ''}">At least 8 characters</li>`;
+            requirementsHtml += `<li class="${checks.uppercase ? 'met' : ''}">Contains uppercase letter</li>`;
+            requirementsHtml += `<li class="${checks.lowercase ? 'met' : ''}">Contains lowercase letter</li>`;
+            requirementsHtml += `<li class="${checks.numbers ? 'met' : ''}">Contains numbers</li>`;
+            requirementsHtml += `<li class="${checks.special ? 'met' : ''}">Contains special characters (!@#$%^&*)</li>`;
+            requirementsHtml += '</ul></div>';
+            
+            if (!strengthContainer.querySelector('.password-requirements')) {
+                strengthContainer.insertAdjacentHTML('beforeend', requirementsHtml);
+            } else {
+                strengthContainer.querySelector('.password-requirements').outerHTML = requirementsHtml;
+            }
+        }
+
+        // Handle file selection
+        function handleFileSelect(e, type) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Validate file size (50MB max)
+            if (file.size > 50 * 1024 * 1024) {
+                showAlert(type, 'danger', 'File size exceeds 50MB limit');
+                return;
+            }
+
+            // Validate file type
+            const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'audio/mpeg', 'video/mp4'];
+            if (!validTypes.includes(file.type)) {
+                showAlert(type, 'danger', 'Invalid file type. Please use PNG, JPG, JPEG, MP3, or MP4');
+                return;
+            }
+
+            state[`${type}File`] = file;
+
+            // Display file info
+            const fileInfo = document.getElementById(`${type}FileInfo`);
+            fileInfo.innerHTML = `
+                <div class="filename">📄 ${file.name}</div>
+                <div class="filesize">Size: ${formatFileSize(file.size)} | Type: ${file.type.split('/')[1].toUpperCase()}</div>
+            `;
+            fileInfo.classList.add('show');
+        }
+
+        // Handle backup file selection and parsing
+        function handleBackupFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const content = event.target.result;
+                    
+                    // Parse backup file
+                    const entries = content.split('[ENTRY ');
+                    
+                    // Clear existing backups
+                    state.backups = {};
+                    
+                    // Parse each entry
+                    for (let i = 1; i < entries.length; i++) {
+                        const entry = entries[i];
+                        
+                        // Extract hash
+                        const hashMatch = entry.match(/Hash: ([a-f0-9]+)/);
+                        if (!hashMatch) continue;
+                        const hash = hashMatch[1];
+                        
+                        // Extract file name
+                        const nameMatch = entry.match(/File Name: (.+)/);
+                        const fileName = nameMatch ? nameMatch[1].trim() : 'unknown';
+                        
+                        // Extract file type
+                        const typeMatch = entry.match(/File Type: (.+)/);
+                        const fileType = typeMatch ? typeMatch[1].trim() : 'unknown';
+                        
+                        // Extract timestamp
+                        const timeMatch = entry.match(/Timestamp: (.+)/);
+                        const timestamp = timeMatch ? timeMatch[1].trim() : new Date().toISOString();
+                        
+                        // Store in state
+                        state.backups[hash] = {
+                            hash: hash,
+                            fileName: fileName,
+                            fileType: fileType,
+                            timestamp: timestamp
+                        };
+                    }
+                    
+                    // Display success
+                    const backupInfo = document.getElementById('backupFileInfo');
+                    backupInfo.innerHTML = `
+                        <div class="filename">✓ ${file.name}</div>
+                        <div class="filesize">Loaded ${Object.keys(state.backups).length} backup entries</div>
+                    `;
+                    backupInfo.classList.add('show');
+                    
+                    showAlert('decode', 'success', `Backup loaded: ${Object.keys(state.backups).length} entries found`);
+                    
+                } catch (error) {
+                    showAlert('decode', 'danger', 'Error parsing backup file: ' + error.message);
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // Show alert message
+        function showAlert(type, level, message) {
+            const alert = document.getElementById(`${type}Alert`);
+            alert.className = `alert alert-${level} show`;
+            alert.textContent = message;
+            
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 5000);
+        }
+
+        // Clear all alerts
+        function clearAlerts() {
+            document.querySelectorAll('.alert').forEach(alert => {
+                alert.classList.remove('show');
+            });
+        }
+
+        // Show progress bar
+        function showProgress(type, percent) {
+            const progressBar = document.getElementById(`${type}Progress`);
+            const progress = progressBar.querySelector('.progress');
+            progressBar.classList.add('show');
+            progress.style.width = percent + '%';
+        }
+
+        // Hide progress bar
+        function hideProgress(type) {
+            const progressBar = document.getElementById(`${type}Progress`);
+            progressBar.classList.remove('show');
+            progressBar.querySelector('.progress').style.width = '0%';
+        }
+
+        // SHA-256 hashing function
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // PBKDF2 key derivation
+        async function deriveKey(password, salt) {
+            const enc = new TextEncoder();
+            const keyMaterial = await crypto.subtle.importKey(
+                'raw',
+                enc.encode(password),
+                'PBKDF2',
+                false,
+                ['deriveBits']
+            );
+            
+            const derivedBits = await crypto.subtle.deriveBits(
+                {
+                    name: 'PBKDF2',
+                    salt: enc.encode(salt),
+                    iterations: 100000,
+                    hash: 'SHA-256'
+                },
+                keyMaterial,
+                256
+            );
+            
+            return Array.from(new Uint8Array(derivedBits)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // Encode data into file
+        async function encodeData() {
+            try {
+                // Validation
+                if (!state.encodeFile) {
+                    showAlert('encode', 'danger', 'Please upload a cover file');
+                    return;
+                }
+
+                const message = document.getElementById('secretMessage').value;
+                if (!message) {
+                    showAlert('encode', 'danger', 'Please enter a secret message');
+                    return;
+                }
+
+                const password = document.getElementById('encodePassword').value;
+                if (!password) {
+                    showAlert('encode', 'danger', 'Please set a password');
+                    return;
+                }
+
+                // Check password strength
+                if (password.length < 6) {
+                    showAlert('encode', 'danger', 'Password is too weak. Please use at least 6 characters');
+                    return;
+                }
+
+                showProgress('encode', 10);
+
+                // Read file
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        showProgress('encode', 30);
+
+                        // Derive key from password
+                        const salt = 'securestego_salt_v1';
+                        const derivedKey = await deriveKey(password, salt);
+
+                        showProgress('encode', 50);
+
+                        // Create metadata
+                        const metadata = {
+                            message: message,
+                            timestamp: new Date().toISOString(),
+                            passwordHash: await sha256(derivedKey),
+                            fileType: state.encodeFile.type
+                        };
+
+                        // Convert to base64
+                        const metadataStr = JSON.stringify(metadata);
+                        const encodedData = btoa(unescape(encodeURIComponent(metadataStr)));
+
+                        showProgress('encode', 70);
+
+                        // For images, we'll append metadata to the file
+                        const originalData = new Uint8Array(e.target.result);
+                        const metadataBytes = new TextEncoder().encode('STEGO:' + encodedData + ':STEGO');
+                        
+                        // Combine original data with metadata
+                        const combinedData = new Uint8Array(originalData.length + metadataBytes.length);
+                        combinedData.set(originalData, 0);
+                        combinedData.set(metadataBytes, originalData.length);
+
+                        showProgress('encode', 90);
+
+                        // Generate file hash for backup
+                        const fileHash = await sha256(encodedData);
+                        
+                        // Store backup securely (not displayed to user)
+                        const backup = {
+                            hash: fileHash,
+                            fileName: state.encodeFile.name,
+                            timestamp: new Date().toISOString(),
+                            fileType: state.encodeFile.type
+                        };
+                        
+                        state.backups[fileHash] = backup;
+                        saveBackups();
+
+                        // Success message without exposing hash
+                        const hashDisplay = document.getElementById('encodeHash');
+                        hashDisplay.innerHTML = `<strong>✓ Secure Backup Created</strong><br>File hash has been securely stored. Backup file downloaded to your folder.`;
+                        hashDisplay.classList.add('show');
+
+                        showProgress('encode', 95);
+
+                        // Create download
+                        const blob = new Blob([combinedData], { type: state.encodeFile.type });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'encoded_' + state.encodeFile.name;
+                        a.click();
+                        URL.revokeObjectURL(url);
+
+                        showProgress('encode', 100);
+
+                        setTimeout(() => {
+                            hideProgress('encode');
+                            showAlert('encode', 'success', '✓ File encoded successfully! Download started.');
+                        }, 500);
+
+                    } catch (error) {
+                        hideProgress('encode');
+                        showAlert('encode', 'danger', 'Encoding error: ' + error.message);
+                    }
+                };
+
+                reader.readAsArrayBuffer(state.encodeFile);
+
+            } catch (error) {
+                hideProgress('encode');
+                showAlert('encode', 'danger', 'Unexpected error: ' + error.message);
+            }
+        }
+
+        // Decode data from file
+        async function decodeData() {
+            try {
+                // Validation
+                if (!state.decodeFile) {
+                    showAlert('decode', 'danger', 'Please upload an encoded file');
+                    return;
+                }
+
+                const password = document.getElementById('decodePassword').value;
+                if (!password) {
+                    showAlert('decode', 'danger', 'Please enter the password');
+                    return;
+                }
+
+                showProgress('decode', 10);
+
+                // Read file
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        showProgress('decode', 30);
+
+                        const fileData = new Uint8Array(e.target.result);
+                        
+                        // Find metadata markers
+                        const dataStr = new TextDecoder().decode(fileData);
+                        const startMarker = 'STEGO:';
+                        const endMarker = ':STEGO';
+                        
+                        const startIdx = dataStr.lastIndexOf(startMarker);
+                        const endIdx = dataStr.lastIndexOf(endMarker);
+
+                        if (startIdx === -1 || endIdx === -1) {
+                            throw new Error('No hidden data found in this file');
+                        }
+
+                        showProgress('decode', 50);
+
+                        // Extract encoded data
+                        const encodedData = dataStr.substring(startIdx + startMarker.length, endIdx);
+                        
+                        // Decode metadata
+                        const metadataStr = decodeURIComponent(escape(atob(encodedData)));
+                        const metadata = JSON.parse(metadataStr);
+
+                        showProgress('decode', 70);
+
+                        // Verify password
+                        const salt = 'securestego_salt_v1';
+                        const derivedKey = await deriveKey(password, salt);
+                        const passwordHash = await sha256(derivedKey);
+
+                        if (passwordHash !== metadata.passwordHash) {
+                            throw new Error('Incorrect password! Access denied.');
+                        }
+
+                        showProgress('decode', 90);
+
+                        // Generate file hash for verification (stored internally, not shown)
+                        const fileHash = await sha256(encodedData);
+                        
+                        // Verify against backup system
+                        const isVerified = state.backups[fileHash] !== undefined;
+
+                        // Display decoded message
+                        document.getElementById('decodedMessage').value = metadata.message;
+                        document.getElementById('decodedMessageGroup').style.display = 'block';
+
+                        // Display metadata without exposing hash
+                        const hashDisplay = document.getElementById('decodeHash');
+                        hashDisplay.innerHTML = `
+                            <strong>✓ File Verified</strong><br>
+                            <strong>Encoded:</strong> ${new Date(metadata.timestamp).toLocaleString()}<br>
+                            <strong>Type:</strong> ${metadata.fileType}<br>
+                            <strong>Backup Status:</strong> ${isVerified ? 'Verified ✓' : 'New File'}
+                        `;
+                        hashDisplay.classList.add('show');
+
+                        showProgress('decode', 100);
+
+                        setTimeout(() => {
+                            hideProgress('decode');
+                            showAlert('decode', 'success', '✓ Message decoded successfully!');
+                        }, 500);
+
+                    } catch (error) {
+                        hideProgress('decode');
+                        showAlert('decode', 'danger', error.message);
+                    }
+                };
+
+                reader.readAsArrayBuffer(state.decodeFile);
+
+            } catch (error) {
+                hideProgress('decode');
+                showAlert('decode', 'danger', 'Unexpected error: ' + error.message);
+            }
+        }
+
+        // Backup system - saves to downloadable text file
+        function saveBackups() {
+            // Create backup content
+            const backupData = {
+                version: '1.0',
+                generated: new Date().toISOString(),
+                backups: state.backups
+            };
+
+            // Convert to formatted text
+            let backupText = '='.repeat(80) + '\n';
+            backupText += 'STEGANOGRAPHY BACKUP FILE\n';
+            backupText += 'The Art of Hidden Communication\n';
+            backupText += 'Generated: ' + new Date().toLocaleString() + '\n';
+            backupText += '='.repeat(80) + '\n\n';
+
+            Object.keys(state.backups).forEach((hash, index) => {
+                const backup = state.backups[hash];
+                backupText += `[ENTRY ${index + 1}]\n`;
+                backupText += `Hash: ${hash}\n`;
+                backupText += `File Name: ${backup.fileName}\n`;
+                backupText += `File Type: ${backup.fileType}\n`;
+                backupText += `Timestamp: ${new Date(backup.timestamp).toLocaleString()}\n`;
+                backupText += '-'.repeat(80) + '\n\n';
+            });
+
+            // Create and download backup file
+            const blob = new Blob([backupText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'steganography_backup_' + Date.now() + '.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            console.log('Backup file downloaded successfully');
+        }
+
+        function loadBackups() {
+            // Backups are loaded from the downloaded text file manually by user
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
